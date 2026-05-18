@@ -1,22 +1,22 @@
 # Incident Report — Azure App Service Auto-Rollback Executed
 
-**Date:** 2026-05-18T07:42:22.747Z
+**Date:** 2026-05-18T09:05:31.989Z
 **Alert:** demo-azure-5xx-5xx-alert
 **App Service:** demo-azure-5xx-app (https://demo-azure-5xx-app.azurewebsites.net)
 **Resource Group:** demo-azure-5xx-rg
 
 ## What Happened
 
-An Azure Monitor alert (`demo-azure-5xx-5xx-alert`) fired at 2026-05-18T07:42:22.747Z following a deployment to the `demo-azure-5xx-app` Azure App Service. Post-deployment health checks detected HTTP 5xx errors across one or more endpoints. The Aziron Azure Post-Deployment Validation Agent was invoked, executed a full suite of HTTP health checks and integration tests, confirmed a NO-GO verdict, and automatically triggered a rollback to the last known stable v1 build.
+A deployment to the Azure App Service `demo-azure-5xx-app` triggered a spike in HTTP 5xx errors, causing the `demo-azure-5xx-5xx-alert` Azure Monitor alert to fire. The Aziron Post-Deployment Validation Agent was invoked, performed health checks and integration tests, confirmed a NO-GO verdict, and automatically executed a rollback to the stable v1 build.
 
 ## Root Cause
 
-The deployed version introduced a regression in the `/checkout` route caused by a broken integration with `cart_service.get_cart()`. The function call raised an unhandled exception at runtime, resulting in HTTP 500 responses being returned to all clients hitting the checkout endpoint. The defect was not caught pre-deployment because the integration test suite was not executed against the staging environment before promotion to production.
+The newly deployed version introduced a broken integration between the `/checkout` route and the `cart_service.get_cart()` function in `app.py`. The cart service call raised an unhandled exception during request processing, causing the application to return HTTP 500 responses on all checkout-related requests.
 
 ## Azure Monitor Evidence
 
 - Total Http5xx errors: 27
-- Error rate: 18.4%
+- Error rate: 93%
 - Affected endpoints: `/checkout`, `/cart/summary`
 
 ## Auto-Remediation
