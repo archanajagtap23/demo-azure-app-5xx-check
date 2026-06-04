@@ -1,23 +1,23 @@
 # Incident Report — Azure App Service Auto-Rollback Executed
 
-**Date:** 2026-05-18T09:05:31.989Z
+**Date:** 2026-06-04T08:12:11.218Z
 **Alert:** demo-azure-5xx-5xx-alert
 **App Service:** demo-azure-5xx-app (https://demo-azure-5xx-app.azurewebsites.net)
 **Resource Group:** demo-azure-5xx-rg
 
 ## What Happened
 
-A deployment to the Azure App Service `demo-azure-5xx-app` triggered a spike in HTTP 5xx errors, causing the `demo-azure-5xx-5xx-alert` Azure Monitor alert to fire. The Aziron Post-Deployment Validation Agent was invoked, performed health checks and integration tests, confirmed a NO-GO verdict, and automatically executed a rollback to the stable v1 build.
+A deployment to the Azure App Service `demo-azure-5xx-app` triggered a surge in HTTP 5xx errors, causing the Azure Monitor alert `demo-azure-5xx-5xx-alert` to fire. The Aziron Post-Deployment Validation Agent was invoked, performed health checks, fetched Azure Monitor metrics, and executed integration tests. Failures were detected across critical endpoints, resulting in a NO-GO verdict and an automatic rollback to the stable v1 release.
 
 ## Root Cause
 
-The newly deployed version introduced a broken integration between the `/checkout` route and the `cart_service.get_cart()` function in `app.py`. The cart service call raised an unhandled exception during request processing, causing the application to return HTTP 500 responses on all checkout-related requests.
+The deployed version introduced a breaking change in the `/checkout` route. Specifically, the `cart_service.get_cart()` integration was faulty — the function call raised an unhandled exception at runtime, causing the checkout endpoint to return HTTP 500 responses for all requests. This regression was not caught prior to deployment because the integration tests were not executed against the staging environment before the release was promoted to production.
 
 ## Azure Monitor Evidence
 
-- Total Http5xx errors: 27
-- Error rate: 93%
-- Affected endpoints: `/checkout`, `/cart/summary`
+- Total Http5xx errors: 47
+- Error rate: 94%
+- Affected endpoints: `/checkout`, `/checkout/confirm`
 
 ## Auto-Remediation
 
