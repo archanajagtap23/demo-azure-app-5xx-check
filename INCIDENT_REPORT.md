@@ -1,14 +1,14 @@
 # Incident Report — Azure App Service Auto-Rollback Executed
-**Date:** 2026-06-18T04:53:29.650Z
+**Date:** 2026-06-18T05:17:30.871Z
 **Alert:** demo-azure-5xx-5xx-alert
 **App Service:** demo-azure-5xx-appln (https://demo-azure-5xx-appln.azurewebsites.net)
 **Resource Group:** demo-azure-5xx-rg
 
 ## What Happened
-
+A deployment to the Azure App Service triggered a spike in HTTP 5xx errors, causing the demo-azure-5xx-5xx-alert to fire. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. Health checks, Azure Monitor metrics, and integration tests confirmed the deployment was unhealthy. An automatic rollback to the stable v1 zip was executed to restore service availability.
 
 ## Root Cause
-
+The deployed version introduced a breaking change in the `/checkout` route. The `cart_service.get_cart()` function integration was faulty, causing unhandled exceptions that resulted in HTTP 500 responses for all requests hitting the checkout endpoint.
 
 ## Azure Monitor Evidence
 - Total Http5xx errors: 
