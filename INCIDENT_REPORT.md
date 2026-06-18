@@ -1,22 +1,22 @@
 # Incident Report — Azure App Service Auto-Rollback Executed
 
-**Date:** 2026-06-18T11:32:44.463Z
+**Date:** 2026-06-18T11:37:38.787Z
 **Alert:** demo-azure-5xx-5xx-alert
 **App Service:** demo-azure-5xx-appln (https://demo-azure-5xx-appln.azurewebsites.net)
 **Resource Group:** demo-azure-5xx-rg
 
 ## What Happened
 
-A deployment to the Azure App Service triggered a spike in HTTP 5xx errors, causing the `demo-azure-5xx-5xx-alert` Azure Monitor alert to fire. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. Health checks, Azure Monitor metric analysis, and integration tests confirmed that the `/api/checkout` endpoint was returning HTTP 500 errors due to a broken `cart_service.get_cart()` integration. A NO-GO verdict was issued and an automatic rollback to the stable v1 zip was executed.
+A deployment to the Azure App Service triggered a spike in HTTP 5xx errors, causing the `demo-azure-5xx-5xx-alert` Azure Monitor alert to fire. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. Health checks, Azure Monitor metric analysis, and integration tests confirmed that the `/api/checkout` endpoint was returning HTTP 500 errors due to a broken integration with the `cart_service`. A NO-GO verdict was issued and an automatic rollback to the stable v1 zip was executed.
 
 ## Root Cause
 
-The `/api/checkout` route in `app.py` contains a faulty integration with `cart_service.get_cart()`. The function call raises an unhandled exception at runtime, causing the checkout endpoint to return HTTP 500 for all requests. This defect was introduced in the latest deployment and was not caught prior to promotion.
+The `/api/checkout` route in `app.py` contains a faulty call to `cart_service.get_cart()`. The function either raises an unhandled exception or returns an unexpected response type, causing the checkout handler to respond with HTTP 500 to all callers. This regression was introduced in the latest deployment and was not caught by pre-deployment tests.
 
 ## Azure Monitor Evidence
 
 - Total Http5xx errors: 27
-- Error rate: 100%
+- Error rate: 18.4%
 - Affected endpoints: `/api/checkout`
 
 ## Auto-Remediation
