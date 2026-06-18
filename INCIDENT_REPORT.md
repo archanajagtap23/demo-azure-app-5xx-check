@@ -1,22 +1,22 @@
 # Incident Report — Azure App Service Auto-Rollback Executed
 
-**Date:** 2026-06-18T07:28:36.620Z
+**Date:** 2026-06-18T07:35:30.579Z
 **Alert:** demo-azure-5xx-5xx-alert
 **App Service:** demo-azure-5xx-appln (https://demo-azure-5xx-appln.azurewebsites.net)
 **Resource Group:** demo-azure-5xx-rg
 
 ## What Happened
 
-A deployment to the Azure App Service triggered a spike in HTTP 5xx errors, causing the `demo-azure-5xx-5xx-alert` Azure Monitor alert to fire. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. Health checks, Azure Monitor metric analysis, and integration tests confirmed that the `/api/checkout` endpoint was returning HTTP 500 errors due to a broken `cart_service.get_cart()` integration. A NO-GO verdict was issued and an automatic rollback to the stable v1 zip was executed.
+A deployment to the Azure App Service `demo-azure-5xx-appln` triggered the Azure Monitor alert `demo-azure-5xx-5xx-alert` due to a spike in HTTP 5xx errors. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. Health checks, Azure Monitor metric analysis, and integration tests confirmed that the newly deployed version was returning HTTP 500 errors on critical endpoints. A NO-GO verdict was issued and an automatic rollback to the stable v1 zip was executed.
 
 ## Root Cause
 
-The `/api/checkout` route in `app.py` contains a faulty integration with `cart_service.get_cart()`. The function call raises an unhandled exception at runtime, causing the checkout endpoint to return HTTP 500 for all requests. This defect was introduced in the latest deployment and was not caught prior to promotion.
+The root cause was identified as a broken integration between the `/api/checkout` route and the `cart_service.get_cart()` function in `app.py`. The updated deployment introduced a regression in the checkout route that caused unhandled exceptions, resulting in HTTP 500 responses for all requests hitting that endpoint.
 
 ## Azure Monitor Evidence
 
 - Total Http5xx errors: 27
-- Error rate: 100%
+- Error rate: 18.75%
 - Affected endpoints: `/api/checkout`
 
 ## Auto-Remediation
