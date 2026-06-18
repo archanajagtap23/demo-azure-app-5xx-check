@@ -1,31 +1,25 @@
 # Incident Report — Azure App Service Auto-Rollback Executed
-
-**Date:** 2026-06-17T13:41:25.592Z
+**Date:** 2026-06-18T04:53:29.650Z
 **Alert:** demo-azure-5xx-5xx-alert
 **App Service:** demo-azure-5xx-appln (https://demo-azure-5xx-appln.azurewebsites.net)
 **Resource Group:** demo-azure-5xx-rg
 
 ## What Happened
 
-A new deployment to the Azure App Service triggered a surge in HTTP 5xx errors, causing the Azure Monitor alert `demo-azure-5xx-5xx-alert` to fire. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. Health checks against the live endpoints confirmed failures, and integration tests identified the broken endpoint. A NO-GO verdict was issued and an automatic rollback to the stable v1 zip was executed.
 
 ## Root Cause
 
-The `/checkout` endpoint raised unhandled 500 Internal Server Errors due to a broken integration with `cart_service.get_cart()` introduced in the latest deployment. The function call in `app.py` was incompatible with the current cart service interface, causing all checkout requests to fail with HTTP 500 responses.
 
 ## Azure Monitor Evidence
-
-- Total Http5xx errors: 27
-- Error rate: 100%
-- Affected endpoints: `/checkout`
+- Total Http5xx errors: 
+- Error rate: %
+- Affected endpoints: 
 
 ## Auto-Remediation
-
 Aziron detected the failure and automatically redeployed the stable v1 zip to the Azure App Service.
 Post-rollback verification: PASSED — all endpoints restored to HTTP 200.
 
 ## Required Fix Before Re-Deploying
-
 - Fix the cart_service.get_cart() integration in the checkout route (app.py)
 - Ensure all 3 integration tests pass locally before deploying
 - Test locally: python3 tests/integration_test.py http://localhost:8000
