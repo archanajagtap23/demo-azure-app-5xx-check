@@ -1,31 +1,25 @@
 # Incident Report — Azure App Service Auto-Rollback Executed
-
-**Date:** 2026-06-22T05:59:27.167Z
+**Date:** 2026-06-22T06:48:28.789Z
 **Alert:** demo-azure-5xx-5xx-alert
 **App Service:** demo-azure-5xx-appln (https://demo-azure-5xx-appln.azurewebsites.net)
 **Resource Group:** demo-azure-5xx-rg
 
 ## What Happened
-
-A new deployment to the Azure App Service triggered an Azure Monitor 5xx alert. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. HTTP health checks, Azure Monitor metric analysis, and integration tests collectively confirmed that the newly deployed version was serving HTTP 500 errors on critical endpoints. A NO-GO verdict was issued and an automatic rollback to the stable v1 build was executed immediately.
+A deployment to the Azure App Service triggered a spike in HTTP 5xx errors, causing the demo-azure-5xx-5xx-alert to fire. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. Health checks, Azure Monitor metrics, and integration tests confirmed that the newly deployed version was serving 500 Internal Server Errors on the /api/checkout endpoint. An automatic rollback to the stable v1 zip was executed to restore service availability.
 
 ## Root Cause
-
-The root cause was identified as a broken integration between the `/api/checkout` route and the `cart_service.get_cart()` function in `app.py`. The faulty deployment introduced a regression in the checkout route that caused unhandled exceptions, resulting in HTTP 500 responses being returned to clients on every checkout request.
+The root cause was a broken integration between the `/api/checkout` route and the `cart_service.get_cart()` function in `app.py`. The newly deployed version introduced a regression in the checkout route that caused unhandled exceptions, resulting in HTTP 500 responses for all checkout requests.
 
 ## Azure Monitor Evidence
-
 - Total Http5xx errors: 27
-- Error rate: 100%
+- Error rate: 18.4%
 - Affected endpoints: /api/checkout
 
 ## Auto-Remediation
-
 Aziron detected the failure and automatically redeployed the stable v1 zip to the Azure App Service.
 Post-rollback verification: PASSED — all endpoints restored to HTTP 200.
 
 ## Required Fix Before Re-Deploying
-
 - Fix the cart_service.get_cart() integration in the checkout route (app.py)
 - Verify /health endpoint returns HTTP 200
 - Verify /api/products returns HTTP 200
