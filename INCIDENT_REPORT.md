@@ -1,17 +1,17 @@
 # Incident Report — Azure App Service Auto-Rollback Executed
 
-**Date:** 2026-06-18T11:53:39.257Z
+**Date:** 2026-06-22T05:52:29.961Z
 **Alert:** demo-azure-5xx-5xx-alert
 **App Service:** demo-azure-5xx-appln (https://demo-azure-5xx-appln.azurewebsites.net)
 **Resource Group:** demo-azure-5xx-rg
 
 ## What Happened
 
-A deployment to the Azure App Service triggered a spike in HTTP 5xx errors, causing the Azure Monitor alert `demo-azure-5xx-5xx-alert` to fire. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to perform real-time health checks, collect Azure Monitor metrics, and execute integration tests. The results confirmed a NO-GO verdict, and an automatic rollback to the stable v1 zip was initiated and completed successfully.
+A new deployment to the Azure App Service triggered a spike in HTTP 5xx errors, causing the Azure Monitor alert `demo-azure-5xx-5xx-alert` to fire. Aziron, the Azure Incident Response & Auto-Remediation Agent, was invoked to validate the deployment. Health checks against the live endpoints confirmed service degradation, and integration tests identified the `/api/checkout` endpoint as the primary failure point. A NO-GO verdict was issued and an automatic rollback to the stable v1 build was executed.
 
 ## Root Cause
 
-The root cause was identified as a broken integration in the `/api/checkout` route within `app.py`. Specifically, the `cart_service.get_cart()` function call failed at runtime, causing unhandled exceptions that resulted in HTTP 500 responses on the checkout endpoint. The `/health` and `/api/products` endpoints remained unaffected, but the checkout failure was sufficient to trigger the 5xx alert threshold.
+The root cause was a broken integration between the `/api/checkout` route and the `cart_service.get_cart()` function in `app.py`. The faulty deployment introduced a regression in the checkout route that caused unhandled exceptions, resulting in HTTP 500 responses on every checkout request. The `/health` and `/api/products` endpoints remained unaffected, but the checkout failure was sufficient to trigger the 5xx alert threshold.
 
 ## Azure Monitor Evidence
 
@@ -26,10 +26,10 @@ Post-rollback verification: PASSED — all endpoints restored to HTTP 200.
 
 ## Required Fix Before Re-Deploying
 
-- Fix the `cart_service.get_cart()` integration in the checkout route (`app.py`)
-- Verify `/health` endpoint returns HTTP 200
-- Verify `/api/products` returns HTTP 200
-- Verify `/api/checkout` returns HTTP 200
+- Fix the cart_service.get_cart() integration in the checkout route (app.py)
+- Verify /health endpoint returns HTTP 200
+- Verify /api/products returns HTTP 200
+- Verify /api/checkout returns HTTP 200
 - Verify Azure Monitor Http5xx metric remains zero after deployment
 - Deploy: `.\infra\deploy.ps1 deploy`  (or `./infra/deploy.sh deploy` on Linux/Mac)
 
